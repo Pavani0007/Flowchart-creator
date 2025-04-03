@@ -748,6 +748,60 @@
             line.setAttribute('x2', endX);
             line.setAttribute('y2', endY);
         }
+
+        // Clear canvas
+function clearCanvas() {
+    const saveFirst = confirm('Do you want to save the flowchart as an image before clearing?');
+    
+    if (saveFirst) {
+        // Export as image first
+        html2canvas(canvas, {
+            backgroundColor: '#ffffff',
+            scale: 2 // Higher quality
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'flowchart.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            // After saving, clear the canvas
+            performClear();
+            showStatusMessage('Canvas cleared (image saved)');
+        }).catch(error => {
+            showStatusMessage('Error saving image: ' + error.message, true);
+        });
+    } else {
+        // Just clear without saving
+        performClear();
+        showStatusMessage('Canvas cleared');
+    }
+}
+
+// Helper function to perform the actual canvas clearing
+function performClear() {
+    // Remove all elements
+    elements.forEach(el => {
+        if (el.element && el.element.parentNode) {
+            el.element.parentNode.removeChild(el.element);
+        }
+    });
+    
+    // Remove all connections
+    connections.forEach(conn => {
+        if (conn.element && conn.element.parentNode) {
+            conn.element.parentNode.removeChild(conn.element);
+        }
+    });
+    
+    // Reset state
+    elements = [];
+    connections = [];
+    selectedElement = null;
+    nextId = 1;
+    
+    // Reset properties panel
+    propertiesPanel.innerHTML = '<p>Select an element to edit its properties.</p>';
+}
         
         // Handle temp connection end
         function handleTempConnectionEnd(e) {
