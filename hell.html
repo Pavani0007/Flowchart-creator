@@ -1,0 +1,1406 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .toolbar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .shape-palette {
+            background-color: #34495e;
+            color: white;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .shape-option {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .shape-option:hover {
+            background-color: #2980b9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-color: white;
+            background-image: linear-gradient(#e5e5e5 1px, transparent 1px),
+                              linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        #flowchart-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .properties-panel {
+            width: 250px;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-left: 1px solid #bdc3c7;
+            overflow-y: auto;
+        }
+        
+        .properties-panel h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .property-group {
+            margin-bottom: 15px;
+        }
+        
+        .property-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .property-group input, .property-group select, .property-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        
+        .action-button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .action-button:hover {
+            background-color: #219653;
+        }
+        
+        .action-button.delete {
+            background-color: #e74c3c;
+        }
+        
+        .action-button.delete:hover {
+            background-color: #c0392b;
+        }
+        
+        .flowchart-shape {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #2c3e50;
+            font-weight: 500;
+            box-sizing: border-box;
+        }
+        /* Add these new shape styles */
+.flowchart-shape.parallelogram {
+    background-color: #e67e22;
+    transform: skewX(-20deg);
+}
+.guide-line {
+    position: absolute;
+    background-color: rgba(52, 152, 219, 0.7);
+    z-index: 1000;
+}
+
+.guide-line.horizontal {
+    height: 1px;
+    width: 100%;
+}
+
+.guide-line.vertical {
+    width: 1px;
+    height: 100%;
+}
+
+.flowchart-shape.parallelogram .shape-text {
+    transform: skewX(20deg);
+}
+
+.flowchart-shape.document {
+    background-color: #3498db;
+    border-radius: 0 0 10px 10px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 70%, 10% 60%, 0 50%);
+}
+
+.flowchart-shape.hexagon {
+    background-color: #9b59b6;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+/* Enhanced text editing */
+.shape-text-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    outline: none;
+    text-align: center;
+    font-family: inherit;
+    font-weight: inherit;
+    color: inherit;
+    padding: 10px;
+    box-sizing: border-box;
+}
+        
+        .flowchart-shape.selected {
+            box-shadow: 0 0 0 2px #3498db;
+        }
+        
+        .flowchart-shape.rectangle {
+            background-color: #f1c40f;
+            border-radius: 4px;
+        }
+        
+        .flowchart-shape.circle {
+            background-color: #9b59b6;
+            border-radius: 50%;
+        }
+        
+        .flowchart-shape.diamond {
+            background-color: #1abc9c;
+            transform: rotate(45deg);
+        }
+        
+        .flowchart-shape.diamond .shape-text {
+            transform: rotate(-45deg);
+        }
+        
+        .connector {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .connector:hover {
+            background-color: #2980b9;
+        }
+        
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .connection-arrow {
+            fill: #7f8c8d;
+        }
+        
+        .shape-text {
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .shape-text.editable {
+            cursor: text;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .status-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .status-message.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="toolbar">
+            <h2>Flowchart Builder</h2>
+            <div>
+                <button id="save-json" class="action-button">
+                    <i class="fas fa-save"></i> Save as JSON
+                </button>
+                <button id="load-json" class="action-button">
+                    <i class="fas fa-folder-open"></i> Load JSON
+                </button>
+                <button id="export-image" class="action-button">
+                    <i class="fas fa-image"></i> Export as Image
+                </button>
+                <button id="clear-canvas" class="action-button delete">
+                    <i class="fas fa-trash"></i> Clear Canvas
+                </button>
+            </div>
+        </div>
+        
+        <!-- Add these new shape options to the shape-palette div -->
+<div class="shape-palette">
+    <button class="shape-option" data-shape="rectangle">
+        <i class="fas fa-square"></i> Rectangle
+    </button>
+    <button class="shape-option" data-shape="circle">
+        <i class="fas fa-circle"></i> Circle
+    </button>
+    <button class="shape-option" data-shape="diamond">
+        <i class="fas fa-gem"></i> Diamond
+    </button>
+    <button class="shape-option" data-shape="parallelogram">
+        <i class="fas fa-clone"></i> Parallelogram
+    </button>
+    <button class="shape-option" data-shape="document">
+        <i class="fas fa-file-alt"></i> Document
+    </button>
+    <button class="shape-option" data-shape="hexagon">
+        <i class="fas fa-hexagon"></i> Hexagon
+    </button>
+</div>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <div id="flowchart-canvas"></div>
+            </div>
+            
+            <div class="properties-panel">
+                <h3>Properties</h3>
+                <div id="properties-content">
+                    <p>Select an element to edit its properties.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="connection-modal" class="modal">
+        <div class="modal-content">
+            <h3>Connection Properties</h3>
+            <div class="property-group">
+                <label for="connection-label">Label:</label>
+                <input type="text" id="connection-label" placeholder="Enter connection label">
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-connection" class="action-button delete">Cancel</button>
+                <button id="save-connection" class="action-button">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="json-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="json-modal-title">Save/Load JSON</h3>
+            <div class="property-group">
+                <textarea id="json-content" rows="10" style="width: 100%; font-family: monospace;"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-json" class="action-button delete">Cancel</button>
+                <button id="confirm-json" class="action-button">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="status-message" class="status-message"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+```
+
+## JavaScript Implementation
+
+```javascript
+<script>
+    let tempConnectionData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const canvas = document.getElementById('flowchart-canvas');
+    const shapeOptions = document.querySelectorAll('.shape-option');
+    const propertiesPanel = document.getElementById('properties-content');
+    const saveJsonBtn = document.getElementById('save-json');
+    const loadJsonBtn = document.getElementById('load-json');
+    const exportImageBtn = document.getElementById('export-image');
+    const clearCanvasBtn = document.getElementById('clear-canvas');
+    const connectionModal = document.getElementById('connection-modal');
+    const jsonModal = document.getElementById('json-modal');
+    const statusMessage = document.getElementById('status-message');
+    
+    // State variables
+    let selectedElement = null;
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let connecting = false;
+    let connectionStart = null;
+    let tempConnection = null;
+    let elements = [];
+    let connections = [];
+    let nextId = 1;
+    
+    // Initialize the canvas
+    initCanvas();
+    
+    // Event Listeners
+    shapeOptions.forEach(option => {
+        option.addEventListener('click', () => addShape(option.dataset.shape));
+    });
+    
+    saveJsonBtn.addEventListener('click', showSaveJsonModal);
+    loadJsonBtn.addEventListener('click', showLoadJsonModal);
+    exportImageBtn.addEventListener('click', exportAsImage);
+    clearCanvasBtn.addEventListener('click', clearCanvas);
+    
+    // Modal event listeners
+    document.getElementById('cancel-connection').addEventListener('click', cancelConnection);
+    document.getElementById('save-connection').addEventListener('click', saveConnection);
+    document.getElementById('cancel-json').addEventListener('click', () => jsonModal.style.display = 'none');
+    document.getElementById('confirm-json').addEventListener('click', handleJsonConfirm);
+    
+    // Initialize the canvas with event listeners
+    function initCanvas() {
+        canvas.addEventListener('mousedown', startDrag);
+        canvas.addEventListener('mousemove', drag);
+        canvas.addEventListener('mouseup', endDrag);
+        canvas.addEventListener('mouseleave', endDrag);
+    }
+    
+    // Add a new shape to the canvas
+    function addShape(shapeType) {
+    const shape = document.createElement('div');
+    const id = 'element-' + nextId++;
+    const size = shapeType === 'document' ? { width: 120, height: 80 } : 
+                 shapeType === 'hexagon' ? { width: 100, height: 100 } : 
+                 { width: 100, height: 100 };
+    
+    const x = canvas.scrollLeft + (canvas.clientWidth / 2) - (size.width / 2);
+    const y = canvas.scrollTop + (canvas.clientHeight / 2) - (size.height / 2);
+    
+    shape.className = `flowchart-shape ${shapeType}`;
+    shape.id = id;
+    shape.style.width = `${size.width}px`;
+    shape.style.height = `${size.height}px`;
+    shape.style.left = `${x}px`;
+    shape.style.top = `${y}px`;
+    
+    // Set default colors based on shape type
+    const defaultColors = {
+        rectangle: '#f1c40f',
+        circle: '#9b59b6',
+        diamond: '#1abc9c',
+        parallelogram: '#e67e22',
+        document: '#3498db',
+        hexagon: '#9b59b6'
+    };
+    shape.style.backgroundColor = defaultColors[shapeType];
+    
+    const text = document.createElement('div');
+    text.className = 'shape-text editable';
+    text.textContent = shapeType.charAt(0).toUpperCase() + shapeType.slice(1);
+    shape.appendChild(text);
+    
+    // Add connectors
+    addConnectors(shape);
+    
+    canvas.appendChild(shape);
+    
+    // Add to elements array
+    const element = {
+        id,
+        type: shapeType,
+        x,
+        y,
+        width: size.width,
+        height: size.height,
+        text: text.textContent,
+        color: defaultColors[shapeType],
+        element: shape
+    };
+    
+    elements.push(element);
+    
+    // Make text editable
+    makeTextEditable(text, element);
+    
+    // Select the new shape
+    selectElement(shape, element);
+    
+    showStatusMessage(`Added new ${shapeType}`);
+}
+    
+    // Add connectors to a shape
+    function addConnectors(shape) {
+        const positions = [
+            { side: 'top', x: '50%', y: '0%' },
+            { side: 'right', x: '100%', y: '50%' },
+            { side: 'bottom', x: '50%', y: '100%' },
+            { side: 'left', x: '0%', y: '50%' }
+        ];
+        
+        positions.forEach(pos => {
+            const connector = document.createElement('div');
+            connector.className = 'connector';
+            connector.dataset.side = pos.side;
+            connector.dataset.parent = shape.id;
+            connector.style.left = pos.x;
+            connector.style.top = pos.y;
+            connector.style.transform = 'translate(-50%, -50%)';
+            
+            connector.addEventListener('mousedown', startConnection);
+            shape.appendChild(connector);
+        });
+    }
+    
+    // Make shape text editable
+    function makeTextEditable(textElement, elementData) {
+    textElement.addEventListener('dblclick', () => {
+        const input = document.createElement('textarea');
+        input.className = 'shape-text-input';
+        input.value = textElement.textContent;
+        input.style.color = getContrastColor(elementData.color);
+        
+        textElement.textContent = '';
+        textElement.appendChild(input);
+        input.focus();
+        
+        function saveText() {
+            const newText = input.value.trim();
+            textElement.textContent = newText || elementData.type;
+            elementData.text = newText || elementData.type;
+            updatePropertiesPanel();
+        }
+        
+        input.addEventListener('blur', saveText);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                saveText();
+            }
+        });
+    });
+}
+
+function getContrastColor(hexColor) {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.substr(1, 2), 16);
+    const g = parseInt(hexColor.substr(3, 2), 16);
+    const b = parseInt(hexColor.substr(5, 2), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return black or white depending on background brightness
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+}
+    
+    // Start dragging an element
+    function startDrag(e) {
+        if (e.target.classList.contains('connector')) {
+            return; // Let connector handle its own events
+        }
+        
+        let target = e.target;
+        while (target && !target.classList.contains('flowchart-shape') && target !== canvas) {
+            target = target.parentElement;
+        }
+        
+        if (target && target !== canvas && target.classList.contains('flowchart-shape')) {
+            isDragging = true;
+            selectedElement = target;
+            const rect = target.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+            
+            // Bring to front
+            target.style.zIndex = '100';
+            
+            // Select the element
+            const elementData = elements.find(el => el.id === target.id);
+            selectElement(target, elementData);
+            
+            e.preventDefault();
+        } else {
+            // Clicked on canvas background - deselect
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+                selectedElement = null;
+                propertiesPanel.innerHTML = '<p>Select an element to edit its properties.</p>';
+            }
+        }
+    }
+    // Add to drag() function
+function showAlignmentGuides(currentElement) {
+    elements.forEach(el => {
+        if (el.id !== currentElement.id) {
+            // Check for horizontal alignment
+            if (Math.abs(el.y + el.height/2 - (currentElement.y + currentElement.height/2)) < 10) {
+                drawGuideLine('horizontal', el.y + el.height/2);
+            }
+            // Check for vertical alignment
+            if (Math.abs(el.x + el.width/2 - (currentElement.x + currentElement.width/2)) < 10) {
+                drawGuideLine('vertical', el.x + el.width/2);
+            }
+        }
+    });
+}
+
+function drawGuideLine(type, position) {
+    const guide = document.createElement('div');
+    guide.className = `guide-line ${type}`;
+    if (type === 'horizontal') {
+        guide.style.top = `${position}px`;
+    } else {
+        guide.style.left = `${position}px`;
+    }
+    canvas.appendChild(guide);
+    setTimeout(() => guide.remove(), 500);
+}
+    
+    // Drag an element
+    function drag(e) {
+        if (!isDragging || !selectedElement) return;
+        
+        const x = e.clientX - dragOffsetX - canvas.getBoundingClientRect().left + canvas.scrollLeft;
+        const y = e.clientY - dragOffsetY - canvas.getBoundingClientRect().top + canvas.scrollTop;
+        
+        selectedElement.style.left = `${x}px`;
+        selectedElement.style.top = `${y}px`;
+        
+        // Update connections
+        updateConnections();
+        
+        // Update temp connection if exists
+        if (tempConnection) {
+            const endX = e.clientX - canvas.getBoundingClientRect().left + canvas.scrollLeft;
+            const endY = e.clientY - canvas.getBoundingClientRect().top + canvas.scrollTop;
+            updateTempConnection(endX, endY);
+        }
+    }
+    
+    // End dragging
+    function endDrag() {
+        if (isDragging && selectedElement) {
+            isDragging = false;
+            
+            // Update element data
+            const elementData = elements.find(el => el.id === selectedElement.id);
+            if (elementData) {
+                elementData.x = parseInt(selectedElement.style.left);
+                elementData.y = parseInt(selectedElement.style.top);
+            }
+            
+            // Reset z-index
+            selectedElement.style.zIndex = '';
+        }
+    }
+    
+    // Select an element
+    function selectElement(element, elementData) {
+        // Deselect previous
+        if (selectedElement) {
+            selectedElement.classList.remove('selected');
+        }
+        
+        selectedElement = element;
+        selectedElement.classList.add('selected');
+        
+        // Update properties panel
+        updatePropertiesPanel(elementData);
+    }
+    
+    // Update properties panel
+    function updatePropertiesPanel(elementData) {
+    if (!elementData) {
+        propertiesPanel.innerHTML = '<p>Select an element to edit its properties.</p>';
+        return;
+    }
+    
+    let html = `
+        <div class="property-group">
+            <label>Type:</label>
+            <input type="text" value="${elementData.type}" disabled>
+        </div>
+        <div class="property-group">
+            <label>Text:</label>
+            <textarea id="shape-text-input" style="height: 60px;">${elementData.text || ''}</textarea>
+        </div>
+        <div class="property-group">
+            <label>Position:</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="shape-x-input" value="${elementData.x}" style="width: 50%;">
+                <input type="number" id="shape-y-input" value="${elementData.y}" style="width: 50%;">
+            </div>
+        </div>
+        <div class="property-group">
+            <label>Size:</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="shape-width-input" value="${elementData.width}" min="20" style="width: 50%;">
+                <input type="number" id="shape-height-input" value="${elementData.height}" min="20" style="width: 50%;">
+            </div>
+        </div>
+        <div class="property-group">
+            <label>Color:</label>
+            <input type="color" id="shape-color-input" value="${elementData.color || getShapeColor(elementData.type)}">
+        </div>
+        <div class="property-group">
+            <label>Text Color:</label>
+            <input type="color" id="shape-text-color-input" value="${getContrastColor(elementData.color || getShapeColor(elementData.type))}">
+        </div>
+    `;
+    
+    if (elementData.type === 'rectangle') {
+        html += `
+            <div class="property-group">
+                <label>Border Radius:</label>
+                <input type="range" id="shape-radius-input" min="0" max="50" value="4">
+            </div>
+        `;
+    }
+    
+    if (elementData.type === 'parallelogram') {
+        html += `
+            <div class="property-group">
+                <label>Skew Angle:</label>
+                <input type="range" id="shape-skew-input" min="-45" max="45" value="-20">
+            </div>
+        `;
+    }
+    
+    html += `
+        <button id="delete-element" class="action-button delete" style="width: 100%; margin-top: 10px;">
+            <i class="fas fa-trash"></i> Delete Element
+        </button>
+    `;
+    
+    propertiesPanel.innerHTML = html;
+    
+    // Add event listeners to property inputs
+    document.getElementById('shape-text-input').addEventListener('change', (e) => {
+        elementData.text = e.target.value;
+        const textElement = selectedElement.querySelector('.shape-text');
+        if (textElement) textElement.textContent = e.target.value;
+    });
+    
+    document.getElementById('shape-color-input').addEventListener('input', (e) => {
+        elementData.color = e.target.value;
+        selectedElement.style.backgroundColor = e.target.value;
+        // Update text color for contrast
+        const textElement = selectedElement.querySelector('.shape-text');
+        if (textElement) {
+            textElement.style.color = getContrastColor(e.target.value);
+        }
+    });
+    
+    document.getElementById('shape-text-color-input').addEventListener('input', (e) => {
+        const textElement = selectedElement.querySelector('.shape-text');
+        if (textElement) {
+            textElement.style.color = e.target.value;
+        }
+    });
+    
+    if (elementData.type === 'parallelogram') {
+        document.getElementById('shape-skew-input').addEventListener('input', (e) => {
+            selectedElement.style.transform = `skewX(${e.target.value}deg)`;
+            const textElement = selectedElement.querySelector('.shape-text');
+            if (textElement) {
+                textElement.style.transform = `skewX(${-e.target.value}deg)`;
+            }
+        });
+    }
+        
+        document.getElementById('shape-x-input').addEventListener('change', (e) => {
+            const x = parseInt(e.target.value);
+            if (!isNaN(x)) {
+                elementData.x = x;
+                selectedElement.style.left = `${x}px`;
+                updateConnections();
+            }
+        });
+        
+        document.getElementById('shape-y-input').addEventListener('change', (e) => {
+            const y = parseInt(e.target.value);
+            if (!isNaN(y)) {
+                elementData.y = y;
+                selectedElement.style.top = `${y}px`;
+                updateConnections();
+            }
+        });
+        
+        document.getElementById('shape-width-input').addEventListener('change', (e) => {
+    const width = Math.max(20, parseInt(e.target.value) || 100); // Minimum 20px
+    if (!isNaN(width)) {
+        elementData.width = width;
+        selectedElement.style.width = `${width}px`;
+        updateConnections();
+    }
+});
+        
+        document.getElementById('shape-height-input').addEventListener('change', (e) => {
+            const height = parseInt(e.target.value);
+            if (!isNaN(height) && height > 0) {
+                elementData.height = height;
+                selectedElement.style.height = `${height}px`;
+                updateConnections();
+            }
+        });
+        
+        document.getElementById('shape-color-input').addEventListener('change', (e) => {
+            selectedElement.style.backgroundColor = e.target.value;
+        });
+        
+        document.getElementById('delete-element').addEventListener('click', () => {
+            deleteElement(elementData);
+        });
+        
+        if (elementData.type === 'rectangle') {
+            document.getElementById('shape-radius-input').addEventListener('input', (e) => {
+                selectedElement.style.borderRadius = `${e.target.value}px`;
+            });
+        }
+    }
+    
+    // Get default color for shape type
+    function getShapeColor(type) {
+        switch (type) {
+            case 'rectangle': return '#f1c40f';
+            case 'circle': return '#9b59b6';
+            case 'diamond': return '#1abc9c';
+            default: return '#3498db';
+        }
+    }
+    
+    // Delete an element
+    function deleteElement(elementData) {
+        // Remove connections involving this element
+        connections = connections.filter(conn => {
+            if (conn.fromId === elementData.id || conn.toId === elementData.id) {
+                if (conn.element && conn.element.parentNode) {
+                    conn.element.parentNode.removeChild(conn.element);
+                }
+                return false;
+            }
+            return true;
+        });
+        
+        // Remove the element
+        const index = elements.findIndex(el => el.id === elementData.id);
+        if (index !== -1) {
+            elements.splice(index, 1);
+        }
+        
+        if (elementData.element && elementData.element.parentNode) {
+            elementData.element.parentNode.removeChild(elementData.element);
+        }
+        
+        selectedElement = null;
+        propertiesPanel.innerHTML = '<p>Select an element to edit its properties.</p>';
+        
+        showStatusMessage('Element deleted');
+    }
+    
+    // Start a connection from a connector
+    function startConnection(e) {
+        e.stopPropagation();
+        connecting = true;
+        connectionStart = e.target;
+        
+        const startRect = connectionStart.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const startX = startRect.left - canvasRect.left + startRect.width / 2 + canvas.scrollLeft;
+        const startY = startRect.top - canvasRect.top + startRect.height / 2 + canvas.scrollTop;
+        
+        // Create temp connection line
+        tempConnection = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        tempConnection.classList.add('connection-line');
+        tempConnection.style.left = '0';
+        tempConnection.style.top = '0';
+        tempConnection.style.width = '100%';
+        tempConnection.style.height = '100%';
+        tempConnection.style.pointerEvents = 'none';
+        
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('stroke', '#7f8c8d');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('marker-end', 'url(#arrowhead)');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', startX);
+        line.setAttribute('y2', startY);
+        tempConnection.appendChild(line);
+        
+        canvas.appendChild(tempConnection);
+        
+        // Listen for mouse move on document to handle dragging outside canvas
+        document.addEventListener('mousemove', handleTempConnectionMove);
+        document.addEventListener('mouseup', handleTempConnectionEnd);
+    }
+    
+    // Handle temp connection mouse move
+    function handleTempConnectionMove(e) {
+        if (!connecting || !tempConnection) return;
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const endX = e.clientX - canvasRect.left + canvas.scrollLeft;
+        const endY = e.clientY - canvasRect.top + canvas.scrollTop;
+        
+        updateTempConnection(endX, endY);
+    }
+    
+    // Update temp connection line
+    function updateTempConnection(endX, endY) {
+        if (!tempConnection || !connectionStart) return;
+        
+        const startRect = connectionStart.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const startX = startRect.left - canvasRect.left + startRect.width / 2 + canvas.scrollLeft;
+        const startY = startRect.top - canvasRect.top + startRect.height / 2 + canvas.scrollTop;
+        
+        const line = tempConnection.querySelector('line');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', endX);
+        line.setAttribute('y2', endY);
+    }
+    
+    // Handle temp connection end
+    function handleTempConnectionEnd(e) {
+        if (!connecting) return;
+        
+        document.removeEventListener('mousemove', handleTempConnectionMove);
+        document.removeEventListener('mouseup', handleTempConnectionEnd);
+        
+        // Check if we're connecting to another connector
+        let target = e.target;
+        while (target && !target.classList.contains('connector')) {
+            target = target.parentElement;
+        }
+        
+        if (target && target.classList.contains('connector')) {
+            // Check if we're not connecting to the same element
+            if (target.dataset.parent !== connectionStart.dataset.parent) {
+                // Show connection properties modal
+                document.getElementById('connection-label').value = '';
+                connectionModal.style.display = 'flex';
+                
+                // Store connection data for when user saves
+                tempConnectionData = {
+                    fromConnector: connectionStart,
+                    toConnector: target
+                };
+            } else {
+                // Connecting to same element - cancel
+                cancelConnection();
+            }
+        } else {
+            // Didn't connect to anything - cancel
+            cancelConnection();
+        }
+    }
+    
+    // Cancel connection
+    function cancelConnection() {
+        if (tempConnection && tempConnection.parentNode) {
+            tempConnection.parentNode.removeChild(tempConnection);
+        }
+        tempConnection = null;
+        connecting = false;
+        connectionStart = null;
+        connectionModal.style.display = 'none';
+    }
+    
+    // Save connection
+    function saveConnection() {
+        const label = document.getElementById('connection-label').value.trim();
+        
+        // Get from and to elements
+        const fromElement = elements.find(el => el.id === connectionStart.dataset.parent);
+        const toElement = elements.find(el => el.id === tempConnectionData.toConnector.dataset.parent);
+        
+        if (!fromElement || !toElement) {
+            cancelConnection();
+            return;
+        }
+        
+        // Create permanent connection
+        const connectionId = 'connection-' + nextId++;
+        const connectionElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        connectionElement.classList.add('connection-line');
+        connectionElement.id = connectionId;
+        connectionElement.style.left = '0';
+        connectionElement.style.top = '0';
+        connectionElement.style.width = '100%';
+        connectionElement.style.height = '100%';
+        connectionElement.style.pointerEvents = 'none';
+        
+        // Create arrow marker definition if not exists
+        if (!document.getElementById('arrowhead')) {
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.id = 'arrowhead';
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '7');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '3.5');
+            marker.setAttribute('orient', 'auto');
+            
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+            polygon.setAttribute('class', 'connection-arrow');
+            
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+            connectionElement.appendChild(defs);
+        }
+        
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('stroke', '#7f8c8d');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('marker-end', 'url(#arrowhead)');
+        connectionElement.appendChild(line);
+        
+        // Add label if exists
+        if (label) {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('font-size', '12');
+            text.setAttribute('fill', '#2c3e50');
+            text.setAttribute('text-anchor', 'middle');
+            text.textContent = label;
+            connectionElement.appendChild(text);
+        }
+        
+        canvas.appendChild(connectionElement);
+        
+        // Remove temp connection
+        if (tempConnection && tempConnection.parentNode) {
+            tempConnection.parentNode.removeChild(tempConnection);
+        }
+        
+        // Add to connections array
+        const connection = {
+            id: connectionId,
+            fromId: fromElement.id,
+            toId: toElement.id,
+            fromSide: connectionStart.dataset.side,
+            toSide: tempConnectionData.toConnector.dataset.side,
+            label,
+            element: connectionElement
+        };
+        
+        connections.push(connection);
+        
+        // Update connection position
+        updateConnection(connection);
+        
+        // Reset state
+        tempConnection = null;
+        connecting = false;
+        connectionStart = null;
+        connectionModal.style.display = 'none';
+        
+        showStatusMessage('Connection created');
+    }
+    
+    // Update all connections
+    function updateConnections() {
+        connections.forEach(conn => updateConnection(conn));
+    }
+    
+    // Update a single connection
+    function updateConnection(connection) {
+        const fromElement = elements.find(el => el.id === connection.fromId);
+        const toElement = elements.find(el => el.id === connection.toId);
+        
+        if (!fromElement || !toElement || !connection.element) return;
+        
+        const fromRect = fromElement.element.getBoundingClientRect();
+        const toRect = toElement.element.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        
+        // Calculate start point based on fromSide
+        let startX, startY;
+        switch (connection.fromSide) {
+            case 'top':
+                startX = fromRect.left - canvasRect.left + fromRect.width / 2 + canvas.scrollLeft;
+                startY = fromRect.top - canvasRect.top + canvas.scrollTop;
+                break;
+            case 'right':
+                startX = fromRect.left - canvasRect.left + fromRect.width + canvas.scrollLeft;
+                startY = fromRect.top - canvasRect.top + fromRect.height / 2 + canvas.scrollTop;
+                break;
+            case 'bottom':
+                startX = fromRect.left - canvasRect.left + fromRect.width / 2 + canvas.scrollLeft;
+                startY = fromRect.top - canvasRect.top + fromRect.height + canvas.scrollTop;
+                break;
+            case 'left':
+                startX = fromRect.left - canvasRect.left + canvas.scrollLeft;
+                startY = fromRect.top - canvasRect.top + fromRect.height / 2 + canvas.scrollTop;
+                break;
+        }
+        
+        // Calculate end point based on toSide
+        let endX, endY;
+        switch (connection.toSide) {
+            case 'top':
+                endX = toRect.left - canvasRect.left + toRect.width / 2 + canvas.scrollLeft;
+                endY = toRect.top - canvasRect.top + canvas.scrollTop;
+                break;
+            case 'right':
+                endX = toRect.left - canvasRect.left + toRect.width + canvas.scrollLeft;
+                endY = toRect.top - canvasRect.top + toRect.height / 2 + canvas.scrollTop;
+                break;
+            case 'bottom':
+                endX = toRect.left - canvasRect.left + toRect.width / 2 + canvas.scrollLeft;
+                endY = toRect.top - canvasRect.top + toRect.height + canvas.scrollTop;
+                break;
+            case 'left':
+                endX = toRect.left - canvasRect.left + canvas.scrollLeft;
+                endY = toRect.top - canvasRect.top + toRect.height / 2 + canvas.scrollTop;
+                break;
+        }
+        
+        // Update line
+        const line = connection.element.querySelector('line');
+        if (line) {
+            line.setAttribute('x1', startX);
+            line.setAttribute('y1', startY);
+            line.setAttribute('x2', endX);
+            line.setAttribute('y2', endY);
+        }
+        
+        // Update label position
+        const text = connection.element.querySelector('text');
+        if (text) {
+            text.setAttribute('x', (startX + endX) / 2);
+            text.setAttribute('y', (startY + endY) / 2 - 5);
+        }
+    }
+    
+    // Show save JSON modal
+    function showSaveJsonModal() {
+        document.getElementById('json-modal-title').textContent = 'Save as JSON';
+        document.getElementById('json-content').value = JSON.stringify({
+            elements: elements.map(el => ({
+                id: el.id,
+                type: el.type,
+                x: el.x,
+                y: el.y,
+                width: el.width,
+                height: el.height,
+                text: el.text
+            })),
+            connections: connections.map(conn => ({
+                fromId: conn.fromId,
+                toId: conn.toId,
+                fromSide: conn.fromSide,
+                toSide: conn.toSide,
+                label: conn.label
+            }))
+        }, null, 2);
+        
+        document.getElementById('confirm-json').textContent = 'Copy to Clipboard';
+        document.getElementById('confirm-json').onclick = copyToClipboard;
+        
+        jsonModal.style.display = 'flex';
+    }
+    
+    // Show load JSON modal
+    function showLoadJsonModal() {
+        document.getElementById('json-modal-title').textContent = 'Load from JSON';
+        document.getElementById('json-content').value = '';
+        document.getElementById('confirm-json').textContent = 'Load';
+        document.getElementById('confirm-json').onclick = loadFromJson;
+        jsonModal.style.display = 'flex';
+    }
+    
+    // Handle JSON modal confirm
+    function handleJsonConfirm() {
+        // This is set dynamically in showSaveJsonModal and showLoadJsonModal
+    }
+    
+    // Copy to clipboard
+    function copyToClipboard() {
+        const jsonContent = document.getElementById('json-content');
+        jsonContent.select();
+        document.execCommand('copy');
+        
+        showStatusMessage('JSON copied to clipboard');
+        jsonModal.style.display = 'none';
+    }
+    
+    // Load from JSON
+    function loadFromJson() {
+        try {
+            const json = JSON.parse(document.getElementById('json-content').value);
+            
+            // Clear current canvas
+            clearCanvas();
+            
+            // Create elements
+            if (json.elements && Array.isArray(json.elements)) {
+                json.elements.forEach(el => {
+                    const shape = document.createElement('div');
+                    shape.className = `flowchart-shape ${el.type}`;
+                    shape.id = el.id;
+                    shape.style.width = `${el.width}px`;
+                    shape.style.height = `${el.height}px`;
+                    shape.style.left = `${el.x}px`;
+                    shape.style.top = `${el.y}px`;
+                    
+                    const text = document.createElement('div');
+                    text.className = 'shape-text editable';
+                    text.textContent = el.text || el.type;
+                    shape.appendChild(text);
+                    
+                    // Add connectors
+                    addConnectors(shape);
+                    
+                    canvas.appendChild(shape);
+                    
+                    // Add to elements array
+                    elements.push({
+                        id: el.id,
+                        type: el.type,
+                        x: el.x,
+                        y: el.y,
+                        width: el.width,
+                        height: el.height,
+                        text: el.text || el.type,
+                        element: shape
+                    });
+                    
+                    // Make text editable
+                    makeTextEditable(text, el);
+                    
+                    // Update nextId to avoid conflicts
+                    const idNum = parseInt(el.id.split('-')[1]);
+                    if (idNum >= nextId) {
+                        nextId = idNum + 1;
+                    }
+                });
+            }
+            
+            // Create connections
+            if (json.connections && Array.isArray(json.connections)) {
+                json.connections.forEach(conn => {
+                    const fromElement = elements.find(el => el.id === conn.fromId);
+                    const toElement = elements.find(el => el.id === conn.toId);
+                    
+                    if (fromElement && toElement) {
+                        const connectionElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        connectionElement.classList.add('connection-line');
+                        connectionElement.id = 'connection-' + nextId++;
+                        connectionElement.style.left = '0';
+                        connectionElement.style.top = '0';
+                        connectionElement.style.width = '100%';
+                        connectionElement.style.height = '100%';
+                        connectionElement.style.pointerEvents = 'none';
+                        
+                        // Create arrow marker definition if not exists
+                        if (!document.getElementById('arrowhead')) {
+                            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                            marker.id = 'arrowhead';
+                            marker.setAttribute('markerWidth', '10');
+                            marker.setAttribute('markerHeight', '7');
+                            marker.setAttribute('refX', '9');
+                            marker.setAttribute('refY', '3.5');
+                            marker.setAttribute('orient', 'auto');
+                            
+                            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                            polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+                            polygon.setAttribute('class', 'connection-arrow');
+                            
+                            marker.appendChild(polygon);
+                            defs.appendChild(marker);
+                            connectionElement.appendChild(defs);
+                        }
+                        
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('stroke', '#7f8c8d');
+                        line.setAttribute('stroke-width', '2');
+                        line.setAttribute('marker-end', 'url(#arrowhead)');
+                        connectionElement.appendChild(line);
+                        
+                        // Add label if exists
+                        if (conn.label) {
+                            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                            text.setAttribute('font-size', '12');
+                            text.setAttribute('fill', '#2c3e50');
+                            text.setAttribute('text-anchor', 'middle');
+                            text.textContent = conn.label;
+                            connectionElement.appendChild(text);
+                        }
+                        
+                        canvas.appendChild(connectionElement);
+                        
+                        // Add to connections array
+                        connections.push({
+                            id: connectionElement.id,
+                            fromId: conn.fromId,
+                            toId: conn.toId,
+                            fromSide: conn.fromSide,
+                            toSide: conn.toSide,
+                            label: conn.label,
+                            element: connectionElement
+                        });
+                    }
+                });
+            }
+            
+            // Update all connections
+            updateConnections();
+            
+            showStatusMessage('Flowchart loaded successfully');
+            jsonModal.style.display = 'none';
+        } catch (error) {
+            showStatusMessage('Error loading JSON: ' + error.message, true);
+        }
+    }
+    
+    // Export as image
+    function exportAsImage() {
+        showStatusMessage('Exporting image...');
+        
+        html2canvas(canvas, {
+            backgroundColor: '#ffffff',
+            scale: 2 // Higher quality
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'flowchart.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            showStatusMessage('Image exported successfully');
+        }).catch(error => {
+            showStatusMessage('Error exporting image: ' + error.message, true);
+        });
+    }
+    
+    // Clear canvas
+    function clearCanvas() {
+        if (confirm('Are you sure you want to clear the canvas? All elements will be deleted.')) {
+            // Remove all elements
+            elements.forEach(el => {
+                if (el.element && el.element.parentNode) {
+                    el.element.parentNode.removeChild(el.element);
+                }
+            });
+            
+            // Remove all connections
+            connections.forEach(conn => {
+                if (conn.element && conn.element.parentNode) {
+                    conn.element.parentNode.removeChild(conn.element);
+                }
+            });
+            
+            // Reset state
+            elements = [];
+            connections = [];
+            selectedElement = null;
+            nextId = 1;
+            
+            // Reset properties panel
+            propertiesPanel.innerHTML = '<p>Select an element to edit its properties.</p>';
+            
+            showStatusMessage('Canvas cleared');
+        }
+    }
+    
+    // Show status message
+    function showStatusMessage(message, isError = false) {
+        statusMessage.textContent = message;
+        statusMessage.style.backgroundColor = isError ? '#e74c3c' : '#27ae60';
+        statusMessage.classList.add('show');
+        
+        setTimeout(() => {
+            statusMessage.classList.remove('show');
+        }, 3000);
+    }
+});
+</script>
