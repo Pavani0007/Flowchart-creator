@@ -32,6 +32,9 @@
                 <button id="validate-flowchart" class="action-button secondary">
                     <i class="fas fa-check-circle"></i> Validate
                 </button>
+                <button id="background-btn" class="action-button">
+                    <i class="fas fa-image"></i> Background
+                </button>
                 <div class="toolbar-search">
                     <input type="text" id="shape-search" placeholder="Search shapes...">
                 </div>
@@ -50,6 +53,8 @@
                 <button id="help-btn" class="action-button secondary">
                     <i class="fas fa-question-circle"></i> Help
                 </button>
+
+                
             </div>
         </div>
         
@@ -133,6 +138,55 @@
             </div>
         </div>
     </div>
+
+    
+
+    <div id="background-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-background">&times;</span>
+            <h3>Background & Grid Settings</h3>
+            
+            <div class="modal-section">
+                <h4>Background Color</h4>
+                <input type="color" id="bg-color" value="#ffffff">
+            </div>
+            
+            <div class="modal-section">
+                <h4>Grid Settings</h4>
+                <div class="property-group">
+                    <label>Show Grid:</label>
+                    <input type="checkbox" id="show-grid" checked>
+                </div>
+                <div class="property-group">
+                    <label>Grid Size:</label>
+                    <input type="range" id="grid-size" min="10" max="100" value="20">
+                </div>
+                <div class="property-group">
+                    <label>Grid Color:</label>
+                    <input type="color" id="grid-color" value="#e0e0e0">
+                </div>
+                <div class="property-group">
+                    <label>Snap to Grid:</label>
+                    <input type="checkbox" id="snap-to-grid">
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h4>Background Image</h4>
+                <input type="file" id="bg-image" accept="image/*">
+                <div class="property-group">
+                    <label>Opacity:</label>
+                    <input type="range" id="bg-opacity" min="0" max="100" value="100">
+                </div>
+                <button id="remove-bg-image" class="action-button secondary">Remove Image</button>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="apply-background" class="action-button">Apply</button>
+                <button id="cancel-background" class="action-button secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
     
     <div id="export-modal" class="modal">
         <div class="modal-content">
@@ -152,6 +206,8 @@
             </div>
         </div>
     </div>
+
+    
     
     <div id="status-message" class="status-message"></div>
     
