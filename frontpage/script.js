@@ -24,8 +24,23 @@
             const resetViewBtn = document.getElementById('reset-view');
             const shapeSearch = document.getElementById('shape-search');
             const helpBtn = document.getElementById('help-btn');
-            
-            // State variables
+            const backgroundBtn = document.getElementById('background-btn');
+            const backgroundModal = document.getElementById('background-modal');
+            const closeBackgroundBtn = document.getElementById('close-background');
+            const applyBackgroundBtn = document.getElementById('apply-background');
+            const cancelBackgroundBtn = document.getElementById('cancel-background');
+            const bgColorInput = document.getElementById('bg-color');
+            const showGridCheckbox = document.getElementById('show-grid');
+            const gridSizeInput = document.getElementById('grid-size');
+            const gridColorInput = document.getElementById('grid-color');
+            const snapToGridCheckbox = document.getElementById('snap-to-grid');
+            const bgImageInput = document.getElementById('bg-image');
+            const bgOpacityInput = document.getElementById('bg-opacity');
+            const removeBgImageBtn = document.getElementById('remove-bg-image');
+
+
+            let snapToGrid = false;
+            let gridSize = 20;
             let selectedElement = null;
             let isDragging = false;
             let dragOffsetX = 0;
@@ -42,6 +57,7 @@
             let copiedElement = null;
             let history = [];
             let currentHistoryIndex = -1;
+            canvas.style.backgroundColor = '#ffffff';
             
             // Initialize the canvas
             initCanvas();
@@ -66,6 +82,13 @@
             resetViewBtn.addEventListener('click', resetView);
             shapeSearch.addEventListener('input', handleShapeSearch);
             helpBtn.addEventListener('click', startTutorial);
+            backgroundBtn.addEventListener('click', showBackgroundModal);
+            closeBackgroundBtn.addEventListener('click', () => backgroundModal.style.display = 'none');
+            applyBackgroundBtn.addEventListener('click', applyBackgroundSettings);
+            cancelBackgroundBtn.addEventListener('click', () => backgroundModal.style.display = 'none');
+            bgImageInput.addEventListener('change', handleBgImageUpload);
+            removeBgImageBtn.addEventListener('click', removeBgImage);
+            
             
             // Modal event listeners
             document.getElementById('cancel-connection').addEventListener('click', cancelConnection);
@@ -291,51 +314,7 @@
             }
             
             // Drag an element or pan the canvas
-            function drag(e) {
-                if (!isDragging) return;
-                
-                // Handle panning
-                if (selectedElement === null) {
-                    const dx = e.clientX - dragOffsetX;
-                    const dy = e.clientY - dragOffsetY;
-                    dragOffsetX = e.clientX;
-                    dragOffsetY = e.clientY;
-                    
-                    panX += dx;
-                    panY += dy;
-                    updateCanvasTransform();
-                    return;
-                }
-                
-                // Get canvas position
-                const canvasRect = canvas.getBoundingClientRect();
-                
-                // Calculate new position
-                const x = e.clientX - canvasRect.left + canvas.scrollLeft - dragOffsetX;
-                const y = e.clientY - canvasRect.top + canvas.scrollTop - dragOffsetY;
-                
-                // Apply the new position
-                selectedElement.style.left = `${x}px`;
-                selectedElement.style.top = `${y}px`;
-                
-                // Update the element data
-                const elementData = elements.find(el => el.id === selectedElement.id);
-                if (elementData) {
-                    elementData.x = x;
-                    elementData.y = y;
-                    showAlignmentGuides(elementData);
-                }
-                
-                // Update connections
-                updateConnections();
-                
-                // Update temp connection if exists
-                if (tempConnection) {
-                    const endX = e.clientX - canvasRect.left + canvas.scrollLeft;
-                    const endY = e.clientY - canvasRect.top + canvas.scrollTop;
-                    updateTempConnection(endX, endY);
-                }
-            }
+            
             
             // Show alignment guides
             function showAlignmentGuides(currentElement) {
@@ -946,6 +925,42 @@ function performClear() {
         function updateConnections() {
             connections.forEach(conn => updateConnection(conn));
         }
+
+        /**
+ * Previews the selected background image before applying
+ */
+function previewBackgroundImage() {
+    const file = bgImageInput.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Show preview in modal (optional)
+        const preview = document.getElementById('bg-image-preview');
+        if (preview) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Removes the background image
+ */
+function removeBackgroundImage() {
+    // Clear file input
+    bgImageInput.value = '';
+    
+    // Hide preview if exists
+    const preview = document.getElementById('bg-image-preview');
+    if (preview) {
+        preview.style.display = 'none';
+    }
+    
+    // Show feedback
+    showStatusMessage('Background image removed');
+}
         
         // Update a single connection
         function updateConnection(connection) {
@@ -1712,6 +1727,19 @@ function performClear() {
         // Save state to history
         function saveState() {
             // Only keep last 50 states
+            const state = {
+                elements: elements.map(el => ({ /* existing element data */ })),
+                connections: connections.map(conn => ({ /* existing connection data */ })),
+                background: {
+                    color: bgColorInput.value,
+                    gridEnabled: showGridCheckbox.checked,
+                    gridSize: parseInt(gridSizeInput.value),
+                    gridColor: gridColorInput.value,
+                    snapToGrid: snapToGridCheckbox.checked,
+                    bgImage: bgImageInput.files[0] ? true : false,
+                    bgOpacity: parseInt(bgOpacityInput.value)
+                }
+            };
             if (history.length >= 50) {
                 history.shift();
             }
@@ -1748,6 +1776,251 @@ function performClear() {
                 }))
             };
         }
+
+        function showBackgroundModal() {
+            // Set current values
+            bgColorInput.value = canvas.style.backgroundColor || '#ffffff';
+            showGridCheckbox.checked = document.querySelector('.canvas-grid') !== null;
+            gridSizeInput.value = gridSize;
+            gridColorInput.value = '#e0e0e0'; // Default grid color
+            snapToGridCheckbox.checked = snapToGrid;
+            
+            backgroundModal.style.display = 'flex';
+        }
+
+        
+        // Apply background settings
+    function applyBackgroundSettings() {
+  
+        canvas.style.backgroundColor = bgColorInput.value;
+    
+    // Handle grid
+        let grid = document.querySelector('.canvas-grid');
+        if (showGridCheckbox.checked) {
+            if (!grid) {
+                grid = document.createElement('div');
+                grid.className = 'canvas-grid';
+                canvas.insertBefore(grid, canvas.firstChild);
+            }
+            
+            gridSize = parseInt(gridSizeInput.value);
+            const gridColor = gridColorInput.value;
+            
+            grid.style.backgroundImage = `
+                linear-gradient(to right, ${gridColor} 1px, transparent 1px),
+                linear-gradient(to bottom, ${gridColor} 1px, transparent 1px)
+            `;
+            grid.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+        } else if (grid) {
+            grid.remove();
+        }
+        
+        // Set snap to grid
+        snapToGrid = snapToGridCheckbox.checked;
+        
+        backgroundModal.style.display = 'none';
+        showStatusMessage('Background settings applied');
+        saveState();
+    }
+        // Handle background image upload
+        
+        function handleBgImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+        
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Remove any existing background image
+                let bgImage = document.querySelector('.canvas-bg-image');
+                if (bgImage) {
+                    bgImage.remove();
+                }
+        
+                // Create new background image element
+                bgImage = document.createElement('div');
+                bgImage.className = 'canvas-bg-image';
+                
+                // Set styles for the background image
+                bgImage.style.position = 'absolute';
+                bgImage.style.top = '0';
+                bgImage.style.left = '0';
+                bgImage.style.width = '100%';
+                bgImage.style.height = '100%';
+                bgImage.style.backgroundImage = `url(${event.target.result})`;
+                bgImage.style.backgroundSize = 'cover';
+                bgImage.style.backgroundPosition = 'center';
+                bgImage.style.backgroundRepeat = 'no-repeat';
+                bgImage.style.opacity = bgOpacityInput.value / 100;
+                bgImage.style.zIndex = '-1';
+                
+                // Insert at the beginning of canvas
+                canvas.insertBefore(bgImage, canvas.firstChild);
+                
+                showStatusMessage('Background image uploaded successfully');
+            };
+            reader.readAsDataURL(file);
+        }
+        function removeBgImage() {
+            const bgImage = document.querySelector('.canvas-bg-image');
+            if (bgImage) {
+                bgImage.remove();
+            }
+            bgImageInput.value = '';
+            showStatusMessage('Background image removed');
+        }
+        
+       
+        function drag(e) {
+            if (!isDragging) return;
+            
+            // Handle panning
+            if (selectedElement === null) {
+                const dx = e.clientX - dragOffsetX;
+                const dy = e.clientY - dragOffsetY;
+                dragOffsetX = e.clientX;
+                dragOffsetY = e.clientY;
+                
+                panX += dx;
+                panY += dy;
+                updateCanvasTransform();
+                return;
+            }
+            
+            // Get canvas position
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Calculate new position
+            let x = e.clientX - canvasRect.left + canvas.scrollLeft - dragOffsetX;
+            let y = e.clientY - canvasRect.top + canvas.scrollTop - dragOffsetY;
+            
+            // Snap to grid if enabled
+            if (snapToGrid && gridSize > 0) {
+                x = Math.round(x / gridSize) * gridSize;
+                y = Math.round(y / gridSize) * gridSize;
+            }
+            
+            // Apply the new position
+            selectedElement.style.left = `${x}px`;
+            selectedElement.style.top = `${y}px`;
+            
+            // Update the element data
+            const elementData = elements.find(el => el.id === selectedElement.id);
+            if (elementData) {
+                elementData.x = x;
+                elementData.y = y;
+                showAlignmentGuides(elementData);
+            }
+            
+            // Update connections
+            updateConnections();
+            
+            // Update temp connection if exists
+            if (tempConnection) {
+                const endX = e.clientX - canvasRect.left + canvas.scrollLeft;
+                const endY = e.clientY - canvasRect.top + canvas.scrollTop;
+                updateTempConnection(endX, endY);
+            }
+        }
+
+        /**
+ * Applies all selected background features to the canvas
+ */
+        function applyBackgroundSettings() {
+            // Apply background color
+            canvas.style.backgroundColor = bgColorInput.value;
+            
+            // Handle grid
+            let grid = document.querySelector('.canvas-grid');
+            if (showGridCheckbox.checked) {
+                if (!grid) {
+                    grid = document.createElement('div');
+                    grid.className = 'canvas-grid';
+                    canvas.insertBefore(grid, canvas.firstChild);
+                }
+                
+                gridSize = parseInt(gridSizeInput.value);
+                const gridColor = gridColorInput.value;
+                
+                grid.style.backgroundImage = `
+                    linear-gradient(to right, ${gridColor} 1px, transparent 1px),
+                    linear-gradient(to bottom, ${gridColor} 1px, transparent 1px)
+                `;
+                grid.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+            } else if (grid) {
+                grid.remove();
+            }
+            
+            // Handle background image if one was uploaded
+            if (bgImageInput.files && bgImageInput.files[0]) {
+                handleBgImageUpload({ target: bgImageInput });
+            }
+            
+            // Set snap to grid
+            snapToGrid = snapToGridCheckbox.checked;
+            
+            backgroundModal.style.display = 'none';
+            showStatusMessage('Background settings applied');
+            saveState();
+        }
+        
+        function restoreState(state) {
+            if (state.background) {
+                bgColorInput.value = state.background.color || '#ffffff';
+                showGridCheckbox.checked = state.background.gridVisible || false;
+                gridSizeInput.value = state.background.gridSize || 20;
+                gridColorInput.value = state.background.gridColor || '#e0e0e0';
+                snapToGridCheckbox.checked = state.background.snapToGrid || false;
+                bgOpacityInput.value = state.background.bgOpacity * 100 || 100;
+        
+                // Restore background image if it exists
+                if (state.background.bgImage) {
+                    const bgImage = document.createElement('div');
+                    bgImage.className = 'canvas-bg-image';
+                    bgImage.style.position = 'absolute';
+                    bgImage.style.top = '0';
+                    bgImage.style.left = '0';
+                    bgImage.style.width = '100%';
+                    bgImage.style.height = '100%';
+                    bgImage.style.backgroundImage = state.background.bgImage;
+                    bgImage.style.backgroundSize = 'cover';
+                    bgImage.style.backgroundPosition = 'center';
+                    bgImage.style.backgroundRepeat = 'no-repeat';
+                    bgImage.style.opacity = state.background.bgOpacity || 1;
+                    bgImage.style.zIndex = '-1';
+                    
+                    // Remove existing background image if any
+                    const existingBgImage = document.querySelector('.canvas-bg-image');
+                    if (existingBgImage) {
+                        existingBgImage.remove();
+                    }
+                    
+                    canvas.insertBefore(bgImage, canvas.firstChild);
+                }
+            }
+            
+            // Apply all settings
+            applyBackgroundSettings();
+        }
+        
+        function saveState() {
+          
+            const state = {
+                
+                background: {
+                    color: canvas.style.backgroundColor,
+                    gridVisible: showGridCheckbox.checked,
+                    gridSize: gridSize,
+                    gridColor: gridColorInput.value,
+                    snapToGrid: snapToGrid,
+                    bgImage: document.querySelector('.canvas-bg-image')?.style.backgroundImage || null,
+                    bgOpacity: document.querySelector('.canvas-bg-image')?.style.opacity || 1
+                }
+            };
+            
+           
+        }
+        
+        
         
         // Undo
         function undo() {
