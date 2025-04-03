@@ -1,0 +1,449 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+.flowchart-shape {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+    z-index: 1;
+}
+.flowchart-shape.copied {
+    animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+.action-button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.flowchart-shape.selected {
+    z-index: 10;
+    box-shadow: 0 0 0 2px #3498db;
+}
+
+#flowchart-canvas {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: #f9f9f9;
+    transform-origin: 0 0;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.toolbar {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.toolbar-search {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.toolbar-search input {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: none;
+    width: 200px;
+}
+
+.shape-palette {
+    background-color: #34495e;
+    color: white;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.shape-option {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s;
+}
+
+.shape-option:hover {
+    background-color: #2980b9;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background-color: white;
+    background-image: linear-gradient(#e5e5e5 1px, transparent 1px),
+                      linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+#flowchart-canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.properties-panel {
+    width: 250px;
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-left: 1px solid #bdc3c7;
+    overflow-y: auto;
+}
+
+.properties-panel h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.property-group {
+    margin-bottom: 15px;
+}
+
+.property-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #34495e;
+}
+
+.property-group input, .property-group select, .property-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+}
+
+.action-button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: background-color 0.2s;
+}
+
+.action-button:hover {
+    background-color: #219653;
+}
+
+.action-button.delete {
+    background-color: #e74c3c;
+}
+
+.action-button.delete:hover {
+    background-color: #c0392b;
+}
+
+.action-button.secondary {
+    background-color: #7f8c8d;
+}
+
+.action-button.secondary:hover {
+    background-color: #95a5a6;
+}
+
+.flowchart-shape {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2c3e50;
+    font-weight: 500;
+    box-sizing: border-box;
+}
+
+.flowchart-shape.parallelogram {
+    background-color: #e67e22;
+    transform: skewX(-20deg);
+}
+
+.flowchart-shape.parallelogram .shape-text {
+    transform: skewX(20deg);
+}
+
+.flowchart-shape.document {
+    background-color: #3498db;
+    border-radius: 0 0 10px 10px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 70%, 10% 60%, 0 50%);
+}
+
+.flowchart-shape.hexagon {
+    background-color: #9b59b6;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.shape-text-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    outline: none;
+    text-align: center;
+    font-family: inherit;
+    font-weight: inherit;
+    color: inherit;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.flowchart-shape.selected {
+    box-shadow: 0 0 0 2px #3498db;
+}
+
+.flowchart-shape.rectangle {
+    background-color: #f1c40f;
+    border-radius: 4px;
+}
+
+.flowchart-shape.circle {
+    background-color: #9b59b6;
+    border-radius: 50%;
+}
+
+.flowchart-shape.diamond {
+    background-color: #1abc9c;
+    transform: rotate(45deg);
+}
+
+.flowchart-shape.diamond .shape-text {
+    transform: rotate(-45deg);
+}
+
+.connector {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.connector:hover {
+    background-color: #2980b9;
+}
+
+.connection-line {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.connection-arrow {
+    fill: #7f8c8d;
+}
+
+.shape-text {
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.shape-text.editable {
+    cursor: text;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 400px;
+    max-width: 90%;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.status-message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #27ae60;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.status-message.show {
+    opacity: 1;
+}
+
+.status-message.error {
+    background-color: #e74c3c;
+}
+
+.zoom-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 100;
+}
+
+.zoom-controls button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: #2c3e50;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.zoom-controls button:hover {
+    background-color: #34495e;
+}
+
+.templates-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.template-item {
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.template-item:hover {
+    background-color: #f0f0f0;
+}
+
+.template-preview {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.template-label {
+    text-align: center;
+    font-size: 12px;
+}
+
+.guide-line {
+    position: absolute;
+    background-color: rgba(52, 152, 219, 0.7);
+    z-index: 1000;
+}
+
+.guide-line.horizontal {
+    height: 1px;
+    width: 100%;
+}
+
+.guide-line.vertical {
+    width: 1px;
+    height: 100%;
+}
+
+.validation-errors {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.validation-errors h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.validation-error {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.highlight-warning {
+    animation: pulse-warning 1s infinite;
+}
+
+@keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
