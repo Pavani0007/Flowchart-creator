@@ -1,15 +1,3 @@
-:root {
-    --primary: #3498db;
-    --primary-dark: #2980b9;
-    --secondary: #2c3e50;
-    --accent: #e74c3c;
-    --light: #ecf0f1;
-    --dark: #2c3e50;
-    --success: #2ecc71;
-    --warning: #f39c12;
-    --danger: #e74c3c;
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -19,19 +7,20 @@
 
 body {
     background-color: #f5f7fa;
-    color: var(--dark);
+    color: #333;
     line-height: 1.6;
 }
 
 .container {
+    width: 90%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-/* Header */
+/* Header Styles */
 header {
-    background-color: white;
+    background-color: #fff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: fixed;
     width: 100%;
@@ -43,21 +32,21 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
+    padding: 15px 0;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--primary);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #4a6bff;
     text-decoration: none;
 }
 
 .logo i {
     margin-right: 10px;
-    font-size: 28px;
+    font-size: 1.8rem;
 }
 
 .nav-links {
@@ -71,37 +60,76 @@ nav {
 
 .nav-links a {
     text-decoration: none;
-    color: var(--dark);
+    color: #333;
     font-weight: 500;
     transition: color 0.3s;
 }
 
 .nav-links a:hover {
-    color: var(--primary);
+    color: #4a6bff;
 }
 
-.nav-buttons .btn {
-    margin-left: 15px;
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* Button Styles */
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: #4a6bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #3a5bef;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border-color: #4a6bff;
+    color: #4a6bff;
+}
+
+.btn-outline:hover {
+    background-color: #4a6bff;
+    color: white;
+}
+
+.btn-large {
+    padding: 12px 24px;
+    font-size: 1.1rem;
 }
 
 /* Hero Section */
 .hero {
-    padding: 180px 0 100px;
+    padding: 180px 0 80px;
     text-align: center;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
 }
 
 .hero h1 {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     margin-bottom: 20px;
-    color: var(--secondary);
+    color: #2c3e50;
 }
 
 .hero p {
     font-size: 1.2rem;
+    color: #7f8c8d;
     max-width: 700px;
     margin: 0 auto 40px;
-    color: #555;
 }
 
 .hero-buttons {
@@ -111,133 +139,128 @@ nav {
     margin-bottom: 50px;
 }
 
-.hero-image {
-    max-width: 900px;
-    margin: 0 auto;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
 .hero-image img {
     width: 100%;
-    display: block;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    height: 400px;
 }
 
-/* Signup Sections */
+/* Signup Section */
 .signup-container {
     display: flex;
-    gap: 30px;
+    gap: 40px;
     margin: 80px auto;
-    max-width: 1000px;
 }
 
-.signup-section {
+.signup-section, .free-access-section {
     flex: 1;
     background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-.free-access-section {
-    flex: 1;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    text-align: center;
+.signup-section h2, .free-access-section h3 {
+    margin-bottom: 20px;
+    color: #2c3e50;
 }
 
 .form-group {
     margin-bottom: 20px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: var(--dark);
-}
-
 .form-control {
     width: 100%;
-    padding: 12px 15px;
+    padding: 10px 15px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 4px;
     font-size: 1rem;
-    transition: border-color 0.3s;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    border-color: #4a6bff;
 }
 
-.btn {
-    display: inline-block;
-    padding: 12px 25px;
-    border-radius: 5px;
+label {
+    display: block;
+    margin-bottom: 8px;
     font-weight: 500;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: none;
-    font-size: 1rem;
-}
-
-.btn-primary {
-    background-color: var(--primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.btn-outline {
-    background-color: transparent;
-    color: var(--primary);
-    border: 2px solid var(--primary);
-    padding: 10px 25px;
-}
-
-.btn-outline:hover {
-    background-color: var(--primary);
-    color: white;
-}
-
-.btn-large {
-    padding: 15px 30px;
-    font-size: 1.1rem;
-}
-
-.benefits {
-    text-align: left;
-    margin: 25px 0;
-}
-
-.benefits p {
-    margin-bottom: 10px;
-    color: #555;
-    display: flex;
-    align-items: center;
-}
-
-.benefits i {
-    color: var(--success);
-    margin-right: 10px;
-    font-size: 1.1rem;
 }
 
 .terms {
     margin-top: 20px;
-    color: #777;
+    color: #7f8c8d;
     font-size: 0.9rem;
+}
+
+.benefits {
+    margin-top: 30px;
+}
+
+.benefits p {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.benefits i {
+    color: #4a6bff;
+}
+
+/* Features Section */
+#features {
+    padding: 80px 0;
+    background-color: #fff;
+}
+
+.features-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.features-header h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.features-header p {
+    color: #7f8c8d;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    color: #4a6bff;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
 }
 
 /* Responsive */
@@ -246,60 +269,12 @@ nav {
         flex-direction: column;
     }
     
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-    
     .hero-buttons {
         flex-direction: column;
-        align-items: center;
+        gap: 15px;
     }
-}
-
-signup-container {
-    display: flex;
-    gap: 30px;
-    margin: 80px auto;
-    max-width: 1000px;
-}
-
-.signup-section {
-    flex: 1;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-.free-access-section {
-    flex: 1;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    text-align: center;
-}
-
-.benefits {
-    text-align: left;
-    margin: 25px 0;
-}
-
-.benefits p {
-    margin-bottom: 10px;
-    color: #555;
-    display: flex;
-    align-items: center;
-}
-
-.benefits i {
-    color: #2ecc71;
-    margin-right: 10px;
-    font-size: 1.1rem;
-}
-
-@media (max-width: 768px) {
-    .signup-container {
-        flex-direction: column;
+    
+    .nav-links {
+        display: none;
     }
 }
